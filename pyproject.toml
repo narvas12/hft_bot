@@ -1,0 +1,27 @@
+[project]
+name = "3commas-hft-bot"
+version = "0.1.0"
+description = "High-Frequency Trading Bot using 3Commas API"
+authors = [{ name = "Ezechukwu", email = "ebukaemmanuel71@gmail.com" }]
+dependencies = [
+    "requests",
+    "python-dotenv",
+    "ccxt",
+    "ta",
+    "pandas",
+    "pydantic",
+    "pydantic-settings>=2.9.1",
+    "cryptography>=45.0.2",
+]
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+ignore_missing_imports = true
+disallow_untyped_defs = true
+warn_unused_ignores = true

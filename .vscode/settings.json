@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./bot/api_client/endpoints",
+        "./bot/services"
+    ]
+}

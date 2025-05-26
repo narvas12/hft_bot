@@ -4,10 +4,11 @@ run:
 	python -m bot.main
 
 add-exchange:
-	python -m bot.exchange.run
+	uvicorn bot.exchange.add_exchange:app --reload
 
 create-dcabot:
-	python -m bot.bots.dca_run
+	uvicorn bot.dca_bot.create_dca_bot:app --reload
+
 
 check:
 	make typecheck

@@ -6,8 +6,8 @@ import json
 
 class Settings(BaseSettings):
     # 3Commas API Settings
-    THREECOMMAS_API_KEY: str
-    THREECOMMAS_API_SECRET: str
+    THREE_COMMAS_API_KEY: str
+    THREE_COMMAS_API_SECRET: str
     STRATEGY: str = "dummy"
     POLL_INTERVAL: int = 5 
     THREE_COMMAS_API_BASE_URL: str = "https://api.3commas.io/public/api"
@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     # Exchange Settings
     EXCHANGE_TYPE: str = "binance"
     EXCHANGE_NAME: Optional[str] = "My Exchange Account"
-    THREECOMMAS_API_KEY: str
-    THREECOMMAS_API_SECRET: str
+    THREE_COMMAS_API_KEY: str
+    THREE_COMMAS_API_SECRET: str
     EXCHANGE_PASSPHRASE: Optional[str] = None
     
     # These are not used in your code, can be removed if not needed
@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
         @classmethod

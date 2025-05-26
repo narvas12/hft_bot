@@ -15,8 +15,8 @@ def add_exchange_account_example():
     response = accounts_service.add_exchange_account(
         type="binance",
         name="My Binance Account",
-        api_key="binance_api_key_here",
-        secret="binance_secret_here",
+        api_key=API_KEY,
+        secret=API_SECRET,
         address="optional_wallet_address",
         types_to_create=["binance_margin"]
     )

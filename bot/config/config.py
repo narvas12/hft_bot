@@ -1,5 +1,7 @@
+from dotenv import load_dotenv
 import os
 
+load_dotenv() 
 
 THREE_COMMAS_API_KEY = os.environ.get("THREE_COMMAS_API_KEY")
 THREE_COMMAS_API_SECRET = os.environ.get("THREE_COMMAS_API_SECRET")

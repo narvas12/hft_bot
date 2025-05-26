@@ -1,9 +1,18 @@
+import os
 from ..api_client.client import ThreeCommasAPIClient
 from ..services.dca_service import DCABotService
 from ..models.schemas import CreateDCABotPayload
 from ..config.settings import settings
+from ..strategies.scalping import rsi_ema_scalping_strategy
 
-api_client = ThreeCommasAPIClient(settings.THREECOMMAS_API_KEY, settings.THREECOMMAS_API_SECRET)
+
+THREECOMMAS_API_KEY=os.environ.get("THREECOMMAS_API_KEY")
+THREECOMMAS_API_SECRET=os.environ.get("THREECOMMAS_API_SECRET") 
+
+api_client = ThreeCommasAPIClient(
+    settings.THREECOMMAS_API_KEY,
+    settings.THREECOMMAS_API_SECRET
+)
 
 bot_service = DCABotService(api_client)
 
@@ -19,7 +28,7 @@ bot_payload = CreateDCABotPayload(
     max_safety_orders=5,
     active_safety_orders_count=2,
     safety_order_step_percentage=1.0,
-    strategy="long",
+    strategy_list=[rsi_ema_scalping_strategy()],
     cooldown=1800
 )
 

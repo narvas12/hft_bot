@@ -21,4 +21,7 @@ def add_exchange_account_example():
         types_to_create=["binance_margin"]
     )
 
+    print("Exchange account added successfully:")
+    print(response)
+
     return response

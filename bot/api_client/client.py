@@ -1,12 +1,10 @@
-# api_client/client.py
 import os
 import time
 import requests
-import base64
-from urllib.parse import urlencode
 import hmac
 import hashlib
 import json
+from urllib.parse import urlencode
 from typing import Optional, Dict, Any
 from ..config.settings import settings
 from ..utils.logger import get_logger
@@ -14,58 +12,42 @@ from ..utils.logger import get_logger
 logger = get_logger("APIClient")
 
 class APIError(Exception):
-    """Base class for API exceptions"""
     pass
 
 class AuthenticationError(APIError):
-    """Authentication related errors"""
     pass
 
 class RateLimitError(APIError):
-    """Rate limit exceeded errors"""
     pass
 
 class ThreeCommasAPIClient:
     BASE_URL = settings.THREE_COMMAS_API_BASE_URL
     MAX_RETRIES = 3
-    RETRY_DELAY = 5 
+    RETRY_DELAY = 5
 
     def __init__(self, api_key: str, api_secret: str):
         if not api_key or not api_secret:
             raise AuthenticationError("API key and secret must be provided")
-
-        # Debugging type of api_secret
-        logger.debug(f"Type of api_secret before encoding: {type(api_secret)}")
-        
         self.api_key = api_key
-        
-        # Encode the secret key to bytes for HMAC
         self.api_secret = api_secret.encode('utf-8')
-        
-        logger.debug(f"Type of api_secret after encoding: {type(self.api_secret)}")
-
         self.session = requests.Session()
         self.session.headers.update({"Accept": "application/json"})
-
-    def _get_timestamp(self) -> str:
-        return str(int(time.time() * 1000))
 
     def _sign(self, method: str, endpoint: str, params: Optional[Dict[str, Any]] = None) -> str:
         try:
             path = f"/public/api{endpoint}"
+            method = method.upper()
 
-            query_string = ""
-            if params:
-                query_string = urlencode(sorted(params.items()))
-
-            if query_string:
-                string_to_sign = f"{path}?{query_string}"
-            else:
-                string_to_sign = path
+            if method == "GET":
+                query = urlencode(sorted(params.items())) if params else ""
+                total_params = f"{path}?{query}" if query else path
+            else:  
+                body = json.dumps(params or {}, separators=(',', ':'))
+                total_params = f"{path}{body}"
 
             signature = hmac.new(
                 self.api_secret,
-                string_to_sign.encode('utf-8'),
+                total_params.encode('utf-8'),
                 hashlib.sha256
             ).hexdigest()
 
@@ -110,7 +92,7 @@ class ThreeCommasAPIClient:
         last_exception = None
         for attempt in range(self.MAX_RETRIES):
             try:
-                signature = self._sign(method, endpoint, params if method.upper() == "GET" else None)
+                signature = self._sign(method, endpoint, params)
                 headers = self._get_headers(signature)
                 url = self.BASE_URL + endpoint
 
@@ -143,7 +125,6 @@ class ThreeCommasAPIClient:
         raise APIError("Max retries exceeded") from last_exception
 
     def get(self, endpoint: str, params: Optional[Dict] = None) -> Any:
-        """Make a GET request to the API"""
         try:
             logger.debug(f"GET {endpoint} with params: {params}")
             return self._request_with_retry("GET", endpoint, params)
@@ -152,7 +133,6 @@ class ThreeCommasAPIClient:
             raise
 
     def post(self, endpoint: str, params: Optional[Dict] = None) -> Any:
-        """Make a POST request to the API"""
         try:
             logger.debug(f"POST {endpoint} with payload: {params}")
             return self._request_with_retry("POST", endpoint, params)

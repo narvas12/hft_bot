@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
-        extra = Extra.allow  # ✅ Allow unexpected fields from .env
+
 
         @classmethod
         def parse_env_var(cls, field_name: str, raw_val: str):

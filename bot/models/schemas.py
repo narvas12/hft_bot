@@ -1,5 +1,9 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
+
+class StrategyOption(BaseModel):
+    strategy: str
+    options: Dict[str, Any]
 
 class CreateDCABotPayload(BaseModel):
     name: str
@@ -14,7 +18,7 @@ class CreateDCABotPayload(BaseModel):
     active_safety_orders_count: int
     safety_order_step_percentage: float
     take_profit_type: str = Field(default="total")
-    strategy: str = Field(default="long")  # or "short"
+    strategy_list: List[StrategyOption]
     cooldown: int = Field(default=0)
     trailing_enabled: bool = Field(default=False)
     trailing_deviation: Optional[float] = None
@@ -38,7 +42,19 @@ class CreateDCABotPayload(BaseModel):
                 "active_safety_orders_count": 2,
                 "safety_order_step_percentage": 1.0,
                 "take_profit_type": "total",
-                "strategy": "long",
+                "strategy_list": [
+                    {
+                        "strategy": "nonstop",
+                        "options": {
+                            "rsi_period": 14,
+                            "ema_period": 50,
+                            "rsi_buy_threshold": 30,
+                            "rsi_sell_threshold": 70,
+                            "stop_loss_pct": 0.02,
+                            "take_profit_pct": 0.04
+                        }
+                    }
+                ],
                 "cooldown": 1800
             }
         }

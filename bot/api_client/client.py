@@ -33,8 +33,17 @@ class ThreeCommasAPIClient:
     def __init__(self, api_key: str, api_secret: str):
         if not api_key or not api_secret:
             raise AuthenticationError("API key and secret must be provided")
+
+        # Debugging type of api_secret
+        logger.debug(f"Type of api_secret before encoding: {type(api_secret)}")
+        
         self.api_key = api_key
+        
+        # Encode the secret key to bytes for HMAC
         self.api_secret = api_secret.encode('utf-8')
+        
+        logger.debug(f"Type of api_secret after encoding: {type(self.api_secret)}")
+
         self.session = requests.Session()
         self.session.headers.update({"Accept": "application/json"})
 
@@ -43,21 +52,16 @@ class ThreeCommasAPIClient:
 
     def _sign(self, method: str, endpoint: str, params: Optional[Dict[str, Any]] = None) -> str:
         try:
-
             path = f"/public/api{endpoint}"
-
 
             query_string = ""
             if params:
-
                 query_string = urlencode(sorted(params.items()))
-
 
             if query_string:
                 string_to_sign = f"{path}?{query_string}"
             else:
                 string_to_sign = path
-
 
             signature = hmac.new(
                 self.api_secret,
@@ -70,16 +74,12 @@ class ThreeCommasAPIClient:
             logger.error(f"Signing failed: {str(e)}")
             raise APIError("Failed to sign request") from e
 
-
-
     def _get_headers(self, signature: str) -> dict:
         return {
             "Apikey": self.api_key,
             "Signature": signature,
             "Content-Type": "application/json",
         }
-
-
 
     def _handle_response(self, response: requests.Response) -> Any:
         try:
@@ -96,7 +96,6 @@ class ThreeCommasAPIClient:
         except ValueError as json_err:
             raise APIError("Invalid JSON response") from json_err
 
-
     def _extract_error_message(self, response: requests.Response) -> str:
         try:
             error_data = response.json()
@@ -107,13 +106,10 @@ class ThreeCommasAPIClient:
         except ValueError:
             return response.text
 
-
-
     def _request_with_retry(self, method: str, endpoint: str, params: Optional[Dict] = None) -> Any:
         last_exception = None
         for attempt in range(self.MAX_RETRIES):
             try:
-
                 signature = self._sign(method, endpoint, params if method.upper() == "GET" else None)
                 headers = self._get_headers(signature)
                 url = self.BASE_URL + endpoint
@@ -145,9 +141,6 @@ class ThreeCommasAPIClient:
 
         logger.error(f"Request failed after {self.MAX_RETRIES} attempts")
         raise APIError("Max retries exceeded") from last_exception
-
-    
-
 
     def get(self, endpoint: str, params: Optional[Dict] = None) -> Any:
         """Make a GET request to the API"""

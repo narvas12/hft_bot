@@ -28,13 +28,13 @@ class RateLimitError(APIError):
 class ThreeCommasAPIClient:
     BASE_URL = settings.THREE_COMMAS_API_BASE_URL
     MAX_RETRIES = 3
-    RETRY_DELAY = 5  # seconds
+    RETRY_DELAY = 5 
 
     def __init__(self, api_key: str, api_secret: str):
         if not api_key or not api_secret:
             raise AuthenticationError("API key and secret must be provided")
         self.api_key = api_key
-        self.api_secret = api_secret.encode()
+        self.api_secret = api_secret
         self.session = requests.Session()
         self.session.headers.update({"Accept": "application/json"})
 
@@ -43,22 +43,22 @@ class ThreeCommasAPIClient:
 
     def _sign(self, method: str, endpoint: str, params: Optional[Dict[str, Any]] = None) -> str:
         try:
-            # Base path prefix
+
             path = f"/public/api{endpoint}"
 
-            # Build query string if GET or if params are provided for query params
+
             query_string = ""
             if params:
-                # urlencode params alphabetically sorted, for query string
+
                 query_string = urlencode(sorted(params.items()))
 
-            # Compose the string to sign as path + query string (with '?' if query exists)
+
             if query_string:
                 string_to_sign = f"{path}?{query_string}"
             else:
                 string_to_sign = path
 
-            # Compute HMAC SHA256 hex digest
+
             signature = hmac.new(
                 self.api_secret,
                 string_to_sign.encode('utf-8'),

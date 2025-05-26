@@ -19,8 +19,8 @@ def main():
         response = bot.add_exchange_account(
             type=settings.EXCHANGE_TYPE,
             name=settings.EXCHANGE_NAME,
-            api_key=settings.EXCHANGE_API_KEY,
-            secret=settings.EXCHANGE_SECRET_KEY,
+            api_key=settings.THREECOMMAS_API_KEY,
+            secret=settings.THREECOMMAS_API_SECRET,
             passphrase=getattr(settings, 'EXCHANGE_PASSPHRASE', None),
             types_to_create=getattr(settings, 'EXCHANGE_TYPES_TO_CREATE', ['spot'])  
         )

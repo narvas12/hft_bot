@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     # Exchange Settings
     EXCHANGE_TYPE: str = "binance"
     EXCHANGE_NAME: Optional[str] = "My Exchange Account"
-    EXCHANGE_API_KEY: str
-    EXCHANGE_SECRET_KEY: str
+    THREECOMMAS_API_KEY: str
+    THREECOMMAS_API_SECRET: str
     EXCHANGE_PASSPHRASE: Optional[str] = None
     
     # These are not used in your code, can be removed if not needed

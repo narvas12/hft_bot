@@ -6,6 +6,9 @@ run:
 add-exchange:
 	python -m bot.exchange.run
 
+create-dcabot:
+	python -m bot.bots.dca_run
+
 check:
 	make typecheck
 	make format

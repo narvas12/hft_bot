@@ -41,32 +41,45 @@ class ThreeCommasAPIClient:
     def _get_timestamp(self) -> str:
         return str(int(time.time() * 1000))
 
-    def _sign(self, method: str, endpoint: str, params: Optional[Dict] = None) -> tuple[str, str]:
+    def _sign(self, method: str, endpoint: str, params: Optional[Dict[str, Any]] = None) -> str:
         try:
-            timestamp = self._get_timestamp()
+            # Base path prefix
+            path = f"/public/api{endpoint}"
+
+            # Build query string if GET or if params are provided for query params
             query_string = ""
-            body_string = ""
-
-            if method.upper() == "GET" and params:
+            if params:
+                # urlencode params alphabetically sorted, for query string
                 query_string = urlencode(sorted(params.items()))
-            elif method.upper() in ["POST", "PUT", "DELETE"] and params:
-                body_string = json.dumps(params, separators=(',', ':'))
 
-            payload = f"{timestamp}{method.upper()}{endpoint}{query_string or body_string}"
-            signature = hmac.new(self.api_secret, payload.encode(), hashlib.sha256).digest()
-            signature_b64 = base64.b64encode(signature).decode()
-            return signature_b64, timestamp
+            # Compose the string to sign as path + query string (with '?' if query exists)
+            if query_string:
+                string_to_sign = f"{path}?{query_string}"
+            else:
+                string_to_sign = path
+
+            # Compute HMAC SHA256 hex digest
+            signature = hmac.new(
+                self.api_secret,
+                string_to_sign.encode('utf-8'),
+                hashlib.sha256
+            ).hexdigest()
+
+            return signature
         except Exception as e:
             logger.error(f"Signing failed: {str(e)}")
             raise APIError("Failed to sign request") from e
 
-    def _get_headers(self, signature: str, timestamp: str) -> dict:
+
+
+    def _get_headers(self, signature: str) -> dict:
         return {
-            "APIKEY": self.api_key,
+            "Apikey": self.api_key,
             "Signature": signature,
-            "Timestamp": timestamp,
             "Content-Type": "application/json",
         }
+
+
 
     def _handle_response(self, response: requests.Response) -> Any:
         try:
@@ -83,20 +96,31 @@ class ThreeCommasAPIClient:
         except ValueError as json_err:
             raise APIError("Invalid JSON response") from json_err
 
+
     def _extract_error_message(self, response: requests.Response) -> str:
         try:
             error_data = response.json()
-            return error_data.get("error", {}).get("message", response.text)
+            if isinstance(error_data, dict):
+                return error_data.get("error", {}).get("message", response.text)
+            else:
+                return str(error_data)
         except ValueError:
             return response.text
+
+
 
     def _request_with_retry(self, method: str, endpoint: str, params: Optional[Dict] = None) -> Any:
         last_exception = None
         for attempt in range(self.MAX_RETRIES):
             try:
-                signature, timestamp = self._sign(method, endpoint, params)
-                headers = self._get_headers(signature, timestamp)
+
+                signature = self._sign(method, endpoint, params if method.upper() == "GET" else None)
+                headers = self._get_headers(signature)
                 url = self.BASE_URL + endpoint
+
+                logger.debug(f"{method.upper()} {url}")
+                logger.debug(f"Headers: {headers}")
+                logger.debug(f"Payload: {json.dumps(params, indent=2)}")
 
                 if method.upper() == "GET":
                     response = self.session.get(url, headers=headers, params=params)
@@ -104,12 +128,14 @@ class ThreeCommasAPIClient:
                     response = self.session.post(url, headers=headers, json=params)
 
                 return self._handle_response(response)
+
             except RateLimitError as e:
                 if attempt == self.MAX_RETRIES - 1:
                     raise
                 retry_after = int(response.headers.get('Retry-After', self.RETRY_DELAY))
                 logger.warning(f"Rate limited, retrying in {retry_after} seconds...")
                 time.sleep(retry_after)
+
             except Exception as e:
                 last_exception = e
                 if attempt == self.MAX_RETRIES - 1:
@@ -119,6 +145,9 @@ class ThreeCommasAPIClient:
 
         logger.error(f"Request failed after {self.MAX_RETRIES} attempts")
         raise APIError("Max retries exceeded") from last_exception
+
+    
+
 
     def get(self, endpoint: str, params: Optional[Dict] = None) -> Any:
         """Make a GET request to the API"""

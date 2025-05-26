@@ -2,9 +2,14 @@
 
 from bot.api_client.client import ThreeCommasAPIClient
 from bot.services.accounts_service import AccountsService
+import os
+
+API_KEY = os.environ.get("THREECOMMAS_API_KEY")
+API_SECRET = os.environ.get("THREECOMMAS_API_SECRET")
+
 
 def add_exchange_account_example():
-    client = ThreeCommasAPIClient(api_key="YOUR_API_KEY", api_secret="YOUR_API_SECRET")
+    client = ThreeCommasAPIClient(api_key=API_KEY, api_secret=API_SECRET)
     accounts_service = AccountsService(client)
 
     response = accounts_service.add_exchange_account(

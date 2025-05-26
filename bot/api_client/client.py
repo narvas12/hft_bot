@@ -33,8 +33,8 @@ class ThreeCommasAPIClient:
     def __init__(self, api_key: str, api_secret: str):
         if not api_key or not api_secret:
             raise AuthenticationError("API key and secret must be provided")
-        self.api_key = api_key
-        self.api_secret = api_secret
+        self.api_key = api_key.encode('utf-8')
+        self.api_secret = api_secret.encode('utf-8')
         self.session = requests.Session()
         self.session.headers.update({"Accept": "application/json"})
 

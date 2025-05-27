@@ -6,7 +6,7 @@ from .schemas import CreateDCABotPayload
 
 app = FastAPI()
 
-@app.post("/create-dca-bot")
+@app.post("/create-dca-bot/")
 async def create_dca_bot(payload: CreateDCABotPayload):
     url = f"{THREE_COMMAS_BASE_URL}/ver1/bots/create_bot"
     signature = sign_payload(payload.dict())

@@ -1,10 +1,21 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from httpx import AsyncClient
 from bot.config.config import THREE_COMMAS_API_KEY, THREE_COMMAS_BASE_URL
 from .signer import sign_payload
 from .schemas import CreateDCABotPayload
 
+# First, initialize the app
 app = FastAPI()
+
+# Then, add CORS middleware to handle OPTIONS requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change this to specific domains in production
+    allow_credentials=True,
+    allow_methods=["*"],  # Or list: ["POST"]
+    allow_headers=["*"],
+)
 
 @app.post("/create-dca-bot/")
 async def create_dca_bot(payload: CreateDCABotPayload):

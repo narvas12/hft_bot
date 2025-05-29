@@ -1,24 +1,27 @@
-import base64
-import json
-from hashlib import sha256
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives import serialization, hashes
+import hmac
+import hashlib
 
-from ..config.config import PRIVATE_KEY_PATH, THREE_COMMAS_API_KEY, THREE_COMMAS_API_SECRET
+def generate_signature(api_secret: str, request_path: str, query_string: str = "", request_body: str = "") -> str:
+    """
+    Generate HMAC SHA256 signature for 3Commas API.
 
-def sign_payload(payload: dict) -> str:
-    message = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
-    digest = sha256(message).digest()
+    :param api_secret: Your 3Commas secret key
+    :param request_path: The full API path (e.g., /public/api/ver1/bots/create_bot)
+    :param query_string: The URL query string (e.g., param1=value1&param2=value2)
+    :param request_body: The raw request body (for POST/PUT requests)
+    :return: Hex-encoded HMAC SHA256 signature
+    """
+    # Form the full payload string to sign
+    total_params = request_path
+    if query_string:
+        total_params += "?" + query_string
+    total_params += request_body
 
-    with open(PRIVATE_KEY_PATH, "rb") as key_file:
-        private_key = serialization.load_pem_private_key(
-            key_file.read(),
-            password=None,
-        )
+    # Compute HMAC SHA256 signature
+    signature = hmac.new(
+        api_secret.encode("utf-8"),
+        total_params.encode("utf-8"),
+        hashlib.sha256
+    ).hexdigest()
 
-    signature = private_key.sign(
-        digest,
-        padding.PKCS1v15(),
-        hashes.SHA256()
-    )
-    return base64.b64encode(signature).decode()
+    return signature

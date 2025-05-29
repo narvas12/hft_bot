@@ -16,6 +16,7 @@ dependencies = [
     "httpx>=0.28.1",
     "uvicorn>=0.34.2",
     "gunicorn>=23.0.0",
+    "py3cw",
 ]
 requires-python = ">=3.11"
 

@@ -75,7 +75,7 @@ async def create_dca_bot(payload: CreateDCABotPayload):
     try:
         result = await make_3commas_request(
             "POST",
-            "/ver1/bots/create_bot",
+            "/public/api/ver1/bots/create_bot",
             payload=payload.dict()
         )
         return result or {"detail": "Bot created successfully (no content returned)"}

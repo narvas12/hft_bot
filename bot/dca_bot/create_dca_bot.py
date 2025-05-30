@@ -89,7 +89,7 @@ async def get_dca_bot(bot_id: int, include_events: bool = True):
     try:
         result = await make_3commas_request(
             "GET",
-            f"/ver1/bots/{bot_id}/show",
+            f"/public/api/ver1/bots/{bot_id}/show",
             params={"include_events": str(include_events).lower()}
         )
         if result is None:
@@ -121,7 +121,7 @@ async def list_dca_bots(
         
         result = await make_3commas_request(
             "GET",
-            "/ver1/bots",
+            "/public/api/ver1/bots",
             params=params
         )
         return result or {"detail": "No bots found"}
@@ -148,7 +148,7 @@ async def get_strategy_list(
 
         result = await make_3commas_request(
             "GET",
-            "/ver1/bots/strategy_list",
+            "/public/api/ver1/bots/strategy_list",
             params=params
         )
         return result or {"detail": "No strategies found"}

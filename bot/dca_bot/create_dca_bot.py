@@ -37,9 +37,7 @@ async def make_3commas_request(method: str, path: str, params: dict = None, payl
     headers = {
         "APIKEY": THREE_COMMAS_API_KEY,
         "Signature": signature,
-        "Nonce": nonce,
         "Content-Type": "application/json",
-        "Accept": "application/json"
     }
 
     async with AsyncClient() as client:

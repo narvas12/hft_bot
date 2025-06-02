@@ -1,4 +1,46 @@
-THREE_COMMAS_API_KEY=4cd3596383094d05bbe1b523b00927351e274f71b44d4cd1b93cd21fad5bf79e
-THREE_COMMAS_API_SECRET=28c9a28b45deee8a52a76b51ded61af527d209b94ccddc247722660a094ff66be90c4e770be481b839c4b6e524a2bc1b9dba388d4ad8e3a0b9b5461e6be308d6fc119aa58eba8f709719c25aa87115298de15c799c109a91475540c19340fd4706de3c8d
+THREE_COMMAS_API_KEY=f78a1160eb5f4ef69c60faf5423b804c62c289e998ef4c3197219bb3b527cb05
+THREE_COMMAS_API_SECRET=2e56ce37331219295624c0755ea827cdca02d003707ea2db669477af53b4aa045701c3a55a8e58d67a92f9c401d166aa2d9b39bc87d60f5dd9ae8136e6048fdbb55c9f4b38be05c1aaf85565e839c68a364d32f0feedb807a4dadf8cdddc4a1791e01b00
 THREE_COMMAS_API_BASE_URL=https://api.3commas.io
 THREE_COMMAS_PRIVATE_KEY_PATH=private.pem
+
+
+# sudo nano /etc/nginx/sites-available/hft_bot
+server {
+        listen 80;
+        server_name 16.170.140.94;
+        location / {
+                proxy_pass http://127.0.0.1:8000;
+        }
+}
+
+#sudo nano /etc/systemd/system/gunicorn.service
+[Unit]
+Description=Gunicorn service for DCA bot FastAPI app
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+User=caliban
+Group=www-data
+WorkingDirectory=/home/caliban/hft_bot
+ExecStart=/home/caliban/hft_bot/.venv/bin/gunicorn bot.dca_bot.create_dca_bot:a>
+  --workers 4 \
+  --worker-class uvicorn.workers.UvicornWorker \
+  --bind unix:/run/gunicorn.sock
+
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+
+
+# sudo nano /etc/systemd/system/gunicorn.socket
+[Unit]
+Description=Gunicorn socket
+
+[Socket]
+ListenStream=/run/gunicorn.sock
+
+[Install]
+WantedBy=sockets.target

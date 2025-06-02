@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  fastapi:
+    build: .
+    container_name: hft_bot_fastapi
+    image: hft_bot_fastapi:latest
+    restart: always
+
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1

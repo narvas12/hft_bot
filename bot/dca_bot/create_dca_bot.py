@@ -154,3 +154,58 @@ async def get_strategy_list(
         raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/enable-dca-bot/{bot_id}")
+async def enable_dca_bot(bot_id: int):
+    try:
+        result = await make_3commas_request(
+            method="POST",
+            path=f"/public/api/ver1/bots/{bot_id}/enable"
+        )
+        return result or {"detail": f"Bot {bot_id} enabled successfully (no content returned)"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    
+@app.post("/disable-dca-bot/{bot_id}")
+async def disable_dca_bot(bot_id: int):
+    try:
+        result = await make_3commas_request(
+            method="POST",
+            path=f"/public/api/ver1/bots/{bot_id}/disable"
+        )
+        return result or {"detail": f"Bot {bot_id} disabled successfully (no content returned)"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/delete-dca-bot/{bot_id}")
+async def delete_dca_bot(bot_id: int):
+    try:
+        result = await make_3commas_request(
+            method="POST",
+            path=f"/public/api/ver1/bots/{bot_id}/delete"
+        )
+        return result or {"detail": f"Bot {bot_id} deleted successfully (no content returned)"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/update-dca-bot/{bot_id}")
+async def update_dca_bot(bot_id: int, payload: CreateDCABotPayload):
+    try:
+        result = await make_3commas_request(
+            method="POST",
+            path=f"/public/api/ver1/bots/{bot_id}/update",
+            payload=payload.dict()
+        )
+        return result or {"detail": f"Bot {bot_id} updated successfully (no content returned)"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

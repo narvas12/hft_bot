@@ -1,53 +1,51 @@
-3commas_hft_bot/
-│
-├── .env                         # API keys and secrets (never commit)
-├── .gitignore                   # Ignore virtual env, pyc, .env, etc.
-├── Makefile                     # Automation commands
-├── pyproject.toml               # Linting, typing, and tool config
-├── requirements.txt             # For deployment/fallback environments
-├── README.md                    # Project overview and setup instructions
-│
-├── bot/                         # Source code
-│   ├── __init__.py
-│   ├── main.py                  # Entry point to the bot
-│   │
-│   ├── config/                  # Configuration loading and validation
-│   │   └── settings.py
-│   │
-│   ├── core/                    # Core engine
-│   │   ├── bot_manager.py       # Bot initialization and control logic
-│   │   ├── executor.py          # Executes orders via 3Commas API
-│   │   ├── scheduler.py         # Handles intervals, jobs, retries
-│   │   └── state.py             # Tracks runtime bot state, position info
-│   │
-│   ├── strategies/              # Different trading strategies
-│   │   ├── __init__.py
-│   │   ├── scalping.py
-│   │   ├── arbitrage.py
-│   │   └── grid.py
-│   │
-│   ├── exchange/                # Exchange & API interaction
-│   │   ├── __init__.py
-│   │   ├── threecommas_api.py   # Wrapper for 3Commas endpoints
-│   │   └── market_data.py       # Market data fetching/parsing
-│   │
-│   ├── utils/                   # Helper functions
-│   │   ├── __init__.py
-│   │   ├── logger.py            # Logging setup
-│   │   ├── notifier.py          # Webhooks, email, etc.
-│   │   └── tools.py             # Miscellaneous utilities
-│   │
-│   └── models/                  # Typed data classes
-│       ├── __init__.py
-│       ├── trade.py
-│       └── config.py
-│
-└── tests/                       # Unit & integration tests
-    ├── __init__.py
-    ├── test_main.py
-    ├── strategies/
-    │   └── test_scalping.py
-    ├── core/
-    │   └── test_executor.py
-    └── exchange/
-        └── test_threecommas_api.py
+[Unit]
+Description=Gunicorn socket
+
+[Socket]
+ListenStream=8000
+ListenStream=[::]:8000
+
+[Install]
+WantedBy=sockets.target
+
+
+
+[Unit]
+Description=Gunicorn service for DCA bot FastAPI app
+Requires=gunicorn-dcabot.socket
+After=network.target
+
+[Service]
+User=caliban
+Group=www-data
+WorkingDirectory=/home/caliban/hft_bot
+ExecStart=/home/caliban/hft_bot/.venv/bin/gunicorn bot.dca_bot.create_dca_bot:app \
+  --workers 4 \
+  --worker-class uvicorn.workers.UvicornWorker \
+  --bind unix:/run/gunicorn-dcabot.sock
+
+# Gunicorn will inherit the socket from systemd, so no need for StandardInput here
+# StandardInput=socket  <-- you can remove this line or comment it out
+
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+
+
+server {
+    listen 80;
+    server_name api.ezechukwuemmanuel.com;
+
+    location / {
+        proxy_pass http://unix:/run/gunicorn-dcabot.sock;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

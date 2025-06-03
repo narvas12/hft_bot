@@ -1,12 +1,12 @@
 import json
 import time
 from typing import Optional
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Path
 from fastapi.middleware.cors import CORSMiddleware
 from httpx import AsyncClient
 from bot.config.config import THREE_COMMAS_API_KEY, THREE_COMMAS_BASE_URL, THREE_COMMAS_API_SECRET
 from .signer import generate_signature
-from .schemas import CreateDCABotPayload
+from .schemas import AddExchangeAccountPayload, CreateDCABotPayload
 
 # Initialize app
 app = FastAPI()
@@ -31,7 +31,6 @@ async def make_3commas_request(method: str, path: str, params: dict = None, payl
 
     body = json.dumps(payload, separators=(",", ":"), sort_keys=True) if payload else ""
 
-    # ❗ Pass query_string now
     signature = generate_signature(THREE_COMMAS_API_SECRET, path, query_string, body)
 
     headers = {
@@ -66,6 +65,52 @@ async def make_3commas_request(method: str, path: str, params: dict = None, payl
             status_code=response.status_code,
             detail=response.text or f"3Commas API returned status code {response.status_code}"
         )
+
+
+
+@app.post("/add-exchange-account/")
+async def add_exchange_account(payload: AddExchangeAccountPayload):
+    try:
+        result = await make_3commas_request(
+            "POST",
+            "/public/api/ver1/accounts/new",
+            payload=payload.dict(exclude_none=True)
+        )
+        return result or {"detail": "Exchange account added successfully (no content returned)"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/account/list")
+async def get_accounts_list():
+    """
+    Fetch the list of all exchange accounts associated with your 3Commas API key.
+    """
+    try:
+        response = await make_3commas_request(
+            method="GET",
+            path="/ver1/accounts/"
+        )
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/account/details/{account_id}")
+async def get_account_details(account_id: int = Path(..., description="3Commas account ID")):
+    """
+    Fetch exchange account details using the 3Commas account ID.
+    """
+    try:
+        response = await make_3commas_request(
+            method="GET",
+            path=f"/ver1/accounts/{account_id}"
+        )
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/create-dca-bot/")
@@ -209,3 +254,5 @@ async def update_dca_bot(bot_id: int, payload: CreateDCABotPayload):
         raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+

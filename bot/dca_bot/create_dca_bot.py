@@ -67,7 +67,6 @@ async def make_3commas_request(method: str, path: str, params: dict = None, payl
         )
 
 
-
 @app.post("/add-exchange-account/")
 async def add_exchange_account(payload: AddExchangeAccountPayload):
     try:
@@ -90,9 +89,10 @@ async def get_accounts_list():
     """
     try:
         response = await make_3commas_request(
-            method="GET",
-            path="/ver1/accounts/"
+            "GET",
+            "/public/api/ver1/accounts"
         )
+        print(f"Accounts List Response: {response}")
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -105,8 +105,8 @@ async def get_account_details(account_id: int = Path(..., description="3Commas a
     """
     try:
         response = await make_3commas_request(
-            method="GET",
-            path=f"/ver1/accounts/{account_id}"
+            "GET",
+            f"/public/api/ver1/accounts/{account_id}"
         )
         return response
     except Exception as e:

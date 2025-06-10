@@ -77,3 +77,55 @@ class AddExchangeAccountPayload(BaseModel):
     customer_id: Optional[str] = Field(None, description="Customer ID for Bitstamp")
     passphrase: Optional[str] = Field(None, description="Secret phrase for OKX")
     types_to_create: Optional[List[str]] = Field(default_factory=list, description="Array of related account types to be created")
+
+
+
+class CreateGridBotPayload(BaseModel):
+    account_id: int
+    pair: str
+    name: str = Field(..., max_length=40)
+    upper_price: float
+    lower_price: float
+    quantity_per_grid: float
+    grids_quantity: int
+    max_active_buy_lines: Optional[int] = None
+    max_active_sell_lines: Optional[int] = None
+    order_currency_type: Optional[str] = "base"
+    profit_currency_type: Optional[str] = "base"
+    ignore_warnings: Optional[bool] = False
+    trailing_up_enabled: Optional[bool] = False
+    trailing_down_enabled: Optional[bool] = False
+    grid_type: Optional[str] = "arithmetic"  # "geometric" or "arithmetic"
+    expansion_down_enabled: Optional[bool] = False
+    expansion_up_enabled: Optional[bool] = False
+    expansion_up_stop_price: Optional[float] = None
+
+
+
+class UpdateGridBotPayload(BaseModel):
+    name: str = Field(..., max_length=40)
+    upper_price: float
+    lower_price: float
+    quantity_per_grid: float
+    grids_quantity: int
+    order_currency_type: Optional[str] = "quote"
+    profit_currency_type: Optional[str] = "quote"
+    trailing_up_enabled: Optional[bool] = False
+    trailing_down_enabled: Optional[bool] = False
+    grid_type: Optional[str] = "arithmetic"
+    expansion_down_enabled: Optional[bool] = False
+    expansion_down_stop_price: Optional[float] = None
+    expansion_up_enabled: Optional[bool] = False
+    expansion_up_stop_price: Optional[float] = None
+    lower_stop_loss_enabled: Optional[bool] = False
+    lower_stop_loss_price: Optional[float] = None
+    lower_stop_loss_action: Optional[str] = None
+    upper_stop_loss_enabled: Optional[bool] = False
+    upper_stop_loss_price: Optional[float] = None
+    upper_stop_loss_action: Optional[str] = None
+    leverage_type: Optional[str] = "cross"
+    leverage_custom_value: Optional[float] = 1
+    max_active_sell_lines: Optional[int] = None
+    note: Optional[str] = Field(None, max_length=300)
+    ignore_warnings: Optional[bool] = False
+    mode: Optional[str] = "long"
